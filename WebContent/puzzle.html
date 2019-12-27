@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>image puzzle</title>
+<script src="/puzzle/scripts/jquery-3.4.1.min.js"></script>
+<style>
+
+.card {
+	width: 100px;
+	height: 100px;
+	position: relative;
+	transform-style: preserve-3d;
+	transition: 0.5s;
+}
+
+.face {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	color: white;
+	line-height: 50px;
+	text-align: center;
+	backface-visibility: hidden;
+}
+
+.front {
+	transform: rotateY(180deg);
+}
+
+.back {
+	background-image: url(/puzzle/images/white.png);
+	background-size: 100px;
+	transform: rotateY(0deg);
+}
+
+.active {
+	transform: rotateY(180deg);
+	animation: cardRotate 0.1s
+}
+
+</style>
+</head>
+<body ondragstart='return false'>
+	<h1 id="homeBtn">home</h1>
+	<h2>puzzle</h2>
+	<h2><span id="loginState"></span></h2>
+	<table id=board>
+		
+	</table>
+	횟수 : <input type="text" id=count readonly="readonly">
+	타이머 : <input type="text" id=timer readonly="readonly">
+	<button type="button" id=f5>다시</button>
+</body>
+<script>
+	let model3 = ["pic (1).png","pic (1).png",
+				  "pic (2).png","pic (2).png",
+				  "pic (3).png","pic (3).png",
+				  "pic (4).png","pic (4).png",
+				  "pic (5).png","pic (5).png",
+				  "pic (6).png","pic (6).png",
+				  "pic (7).png","pic (7).png",
+				  "pic (8).png","pic (8).png",
+				  "pic (9).png","pic (9).png",
+				  "pic (10).png","pic (10).png",
+				  "pic (11).png","pic (11).png",
+				  "pic (12).png","pic (12).png",
+				  "bomb.png","bomb.png",
+				  "bomb.png","bomb.png",
+				  "bomb.png","bomb.png",
+				  "bomb.png","bomb.png",
+				  "bomb.png","bomb.png",
+				  "bomb.png","bomb.png"]
+	
+	let model2 = ["pic (1).png","pic (1).png",
+				  "pic (2).png","pic (2).png",
+				  "pic (3).png","pic (3).png",
+				  "pic (4).png","pic (4).png",
+				  "pic (5).png","pic (5).png",
+				  "pic (6).png","pic (6).png",
+				  "pic (7).png","pic (7).png",
+				  "pic (8).png","pic (8).png",
+				  "pic (9).png","pic (9).png",
+				  "pic (10).png","pic (10).png",
+				  "pic (11).png","pic (11).png",
+				  "pic (12).png","pic (12).png",
+				  "pic (13).png","pic (13).png",
+				  "pic (14).png","pic (14).png",
+				  "bomb.png","bomb.png",
+				  "bomb.png","bomb.png",
+				  "bomb.png","bomb.png",
+				  "bomb.png","bomb.png"]
+	
+	let model1 = ["pic (1).png","pic (1).png",
+				  "pic (2).png","pic (2).png",
+				  "pic (3).png","pic (3).png",
+				  "pic (4).png","pic (4).png",
+				  "pic (5).png","pic (5).png",
+				  "pic (6).png","pic (6).png",
+				  "bomb.png","bomb.png",
+				  "bomb.png","bomb.png"];
+		
+	$(document).ready(function () {
+		
+		let stage = 1;
+		let model = model1;
+		let loginState = null;
+		let last = 6;
+		let bombCount = 4;
+		
+		//sessionInfo값을 동기요청
+		$.ajax({
+			url : "/puzzle/GetSessionInfo",
+			method : "POST",
+			async : false, //false 동기, true 비동기
+			success : function(json) {
+				loginState = json;
+			}
+		});
+		
+		
+		//loginState 값이 없으면 로그인 페이지로 이동
+		if (loginState == null) {
+			location.href = "/puzzle/login.html";
+			return false; 
+		}
+		
+		//상단 로그인 id표시
+		$("#loginState").text(loginState);
+		
+		//모델 셔플
+		for(let i=0; i<100000; i++) {
+			let ran = Math.floor(Math.random()*model.length);
+			let tmp = model[0];
+			model[0] = model[ran];
+			model[ran] = tmp;
+		}
+		//게임의 크기를 정할 변수 생성
+		let size = Math.sqrt(model.length);
+		//모델 출력
+		$("#board").empty();
+		$(model).each(function(index, item){
+			if (index%size == 0) {
+				$("#board").append("<tr>");
+			}
+			let game = "<td class='card'>";
+			game += "<input type='image' class='face front' src='/puzzle/images/";
+			game += item;
+			game += "'>";
+			game += "<input type='image' class='face back' src='/puzzle/images/white.png'>";
+			game += "</td>";
+			$("#board").append(game);
+			if (index%size == 0) {
+				$("#board").append("</tr>");
+			} 
+		});
+		
+		//카드의 기본 출력이 뒷면으로 되있어서 앞면으로 돌림
+		$(".card").each(function(){
+			$(this).toggleClass('active');
+			$(".face").attr('disabled', true);
+			
+		});
+		
+		setTimeout(function(){
+			$(".card").toggleClass('active');
+			$(".face").attr('disabled', false);
+		},3000);
+		
+		//타이머에 필요한 변수
+		let totalSec = 0 //
+		let msec = 0;
+		let sec = 0;
+		let min = 0;
+		let timer = setInterval(function(){
+			msec++;
+			//0.1초마다 카운트되어 10으로 나누어 초단위로 변환한다.
+			if(msec%10 == 0) {
+				sec++;
+				totalSec++;
+				msec = 0;
+				//sec값이 60이 될때마다 0으로 초기화하고 min값을 증가시킨다.
+				if(sec%60 == 0){
+					min++;
+					sec = 0;
+				}
+			}
+			$("#timer").val(min + "분" + sec + "초" + msec);
+		},100);
+		
+		//게임 변수 설정
+		let total = 0; // 전체 클릭 횟수
+		let state = 0; // 0 or 1 or 2
+		let success = 0; // 열려있는 그림의 수 8개
+		let onePic = null;
+		let twoPic = null;
+		
+		$(document).on('contextmenu', function() {
+			  return false;
+			});
+		
+		//우클릭을 카운트할 변수 생성
+		let rclick = 0;
+		
+		//우클릭시 지뢰찾기 게임처럼 새로운 이미지가 추가되고 다시 우클릭시 이미지가 사라진다.
+		$(".card").contextmenu(function(e){
+			//console.log(e);
+			
+			if(e.which == 3 && $(this).children().is(".find") == true) {
+				rclick--;
+				//console.log(rclick);
+				$(this).children().remove(".find");
+			}
+			else if(e.which == 3 && rclick < bombCount) {
+				rclick++;
+				//console.log(rclick);
+				$(this).append("<input type='image' class='face find' src='/puzzle/images/find.png'>");
+			}
+			
+			
+		});
+		//card클래스를 클릭했을때 하위 클래스중 find가 있으면 false를 리턴하여 클릭을 막는다.
+		$(".card").click(function() {
+			if($(this).children().is(".find") == true) {
+				//console.log("우클릭후 좌클릭");
+				return false;
+			}
+		})
+		
+		//카드 클릭 이벤트 발생시 실행
+		$(document).on("click", ".card",function(){
+			
+			//3번 연속클릭을 막는다.
+			if (state > 1) {
+				state = 0
+				return false;
+			}
+			//card클래스의 하위 클래스에 더블 클릭을 방지한다.
+			$(this).children().attr('disabled', true);
+			//card클래스의 하위 클래스에 뒤집기 이벤트를 실행한다.
+			$(this).toggleClass('active');
+			
+			//클릭이 한번 될때마다 증가함
+			state++;
+			total++;
+			$("#count").val(total);
+			
+			//한번 클릭되면 실행
+			if(state == 1) {
+				//onePic변수에 card의 하위 클래스 정보를 저장
+				onePic = $(this).children();
+				//console.log("state 1 : " + $(onePic).attr("src"));
+				
+				//onePic의 속성중 src값이 /puzzle/images/bomb.png이면 페이지를 새로고침한다.
+				if($(onePic).attr("src") == "/puzzle/images/bomb.png"){
+					setTimeout(function(){
+						alert("폭탄");
+						location.reload();
+					},500);
+				}
+			}
+			//두번 클릭되면 실행
+			else if(state == 2) {
+				
+				//twoPic변수에 card의 하위 클래스 정보를 저장
+				twoPic = $(this).children();
+				//console.log("state 2 : " + $(twoPic).attr("src"));
+				
+				//twoPic의 속성중 src값이 /puzzle/images/bomb.png이면 페이지를 새로고침한다.
+				if($(twoPic).attr("src") == "/puzzle/images/bomb.png"){
+					setTimeout(function(){
+						alert("폭탄");
+						location.reload();
+					},500);
+				}
+				
+				//onePic과 twoPic의 값중 src의 값을 비교하여 같으면 실행
+				if ($(onePic).attr("src") == $(twoPic).attr("src")) {
+					success++;
+					
+					//모든 그림을 맞추고 폭탄의 위치까지 맞으면 스테이지 클리어
+					if(success == last && rclick == bombCount) {
+						stage++;
+						success = 0;
+						
+						//스테이지를 클리어했을때 last의 값이 12이면 게임을 종료하고 기록을 데이터에빙스에 저장한다.
+						if (last === 12) {
+							//console.log(totalSec);
+							
+							//타이머를 초기화한다.
+							clearInterval(timer);
+							setTimeout(function(){
+								alert("성공");	
+								return;
+							},500);
+							
+							//기록을 저장하기위해 시간, 클릭횟수, 아이디 값을 넘겨준다.
+							$.ajax({
+								url : "/puzzle/AddReport",
+								method : "POST",
+								data : {"timer" : totalSec, "count" : total, "memberId" : loginState},
+								success : function() {
+									location.href = "/puzzle/bombsample.html";
+									total = 0;
+								}
+							});
+						}
+						//스테이지마다 값이 변경될 변수의 값으 다시 지정해준다.
+						if(stage == 2) {
+							rclick = 0;
+							model = model2;
+							last = 14;
+							bombCount = model.length - (last*2) -1;
+							//console.log("state2" + bombCount);
+						}
+						else if(stage == 3) {
+							rclick = 0;
+							model = model3;
+							last = 12;
+							bombCount = model.length - (last*2) -1;
+						}
+						
+						//모델 셔플
+						for(let i=0; i<100000; i++) {
+							let ran = Math.floor(Math.random()*model.length);
+							let tmp = model[0];
+							model[0] = model[ran];
+							model[ran] = tmp;
+						}
+						size = Math.sqrt(model.length);
+						//모델 출력
+						setTimeout(function(){
+							$("#board").empty();
+							$(model).each(function(index, item){
+								if (index%size == 0) {
+									$("#board").append("<tr>");
+								}
+								let game = "<td class='card'>";
+								game += "<input type='image' class='face front' src='/puzzle/images/";
+								game += item;
+								game += "'>";
+								game += "<input type='image' class='face back' src='/puzzle/images/white.png'>";
+								game += "</td>";
+								$("#board").append(game);
+								if (index%size == 0) {
+									$("#board").append("</tr>");
+								}
+							});
+							$(".card").each(function(){
+								$(this).toggleClass('active');
+								$(".face").attr('disabled', true);
+								
+							});
+							$(".card").mousedown(function(e){
+								
+								console.log(rclick)
+								//console.log(size + "의" + rclick);
+								if(e.which == 3 && rclick <= bombCount) {
+									rclick++
+									$(this).children(".back").attr("src","/puzzle/images/find.png");
+								}
+							});
+							
+							setTimeout(function(){
+								$(".card").toggleClass('active');
+								$(".face").attr('disabled', false);
+							},3000);
+						},1000);
+					}
+				}
+				//onePic과 twoPic의 값중 src의 값을 비교하여 다르면 실행
+				else {
+					//console.log("실패");
+					//0.5초후 실행
+					setTimeout(function(){
+						//각각의 부모클래스에 카드 뒤집기를 실행한다.
+						$(onePic).parent(".card").toggleClass('active');
+						$(twoPic).parent(".card").toggleClass('active');
+						
+						//각각의 값에 클릭을 허용한다.
+						$(onePic).attr("disabled", false);
+						$(twoPic).attr("disabled", false);
+					},500);
+				}
+				setTimeout(function(){
+					state = 0;	
+				},500);
+			}
+		});
+	});
+	//다시하기 버튼으로 페이지를 새로고침한다.
+	$('#f5').click(function() {
+	location.reload();
+	});
+	
+	//홈으로 넘어가는 버튼
+	$("#homeBtn").click(function(){
+	location.href = "/puzzle/index.html";
+	});
+</script>
+</html>

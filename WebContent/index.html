@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>INDEX</title>
+<script src="/puzzle/scripts/jquery-3.4.1.min.js"></script>
+</head>
+<style>
+* {
+	box-sizing: border-box;
+}
+
+body {
+	font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Style the header */
+.header {
+	background-color: #f1f1f1;
+	padding: 30px;
+	text-align: center;
+	font-size: 35px;
+}
+
+/* Create three unequal columns that floats next to each other */
+.column {
+	float: left;
+	padding: 10px;
+	height: 800px; /* Should be removed. Only for demonstration */
+}
+
+/* Left and right column */
+.column.side {
+	background-color: #f1f1f1;
+	width: 20%;
+}
+
+/* Middle column */
+.column.middle {
+	width: 60%;
+}
+
+/* Clear floats after the columns */
+.row:after {
+	content: "";
+	display: table;
+	clear: both;
+}
+
+/* Style the footer */
+.footer {
+	background-color: #333;
+	padding: 10px;
+	text-align: center;
+}
+
+/* Responsive layout - makes the three columns stack on top of each other instead of next to each other */
+@media ( max-width : 600px) {
+	.column.side, .column.middle {
+		width: 100%;
+	}
+}
+
+ul {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	background-color: #333;
+}
+
+.left {
+	float: left;
+}
+
+.right {
+	float: right;
+}
+
+.center{
+	position:relative;
+	text-align: center;
+	top:30px;
+}
+
+table{
+	margin: auto;
+}
+
+li a {
+	display: block;
+	color: white;
+	text-align: center;
+	padding: 14px 16px;
+	text-decoration: none;
+}
+
+li a:hover {
+	background-color: #111;
+}
+.btn-group {
+  position: relative;
+  display: inline-block;
+}
+.btn-group .btn {
+  cursor: pointer;
+  float: left;
+  height: 40px;
+  width: 160px;
+  line-height: 40px;
+  text-align: center;
+  -webkit-user-select: none;
+  transition: font-size 0.3s ease;
+}
+.btn-group .btn:active {
+  font-size: 0.8em;
+}
+.btn-group svg {
+  z-index: -1;
+  top: 0;
+  left: 0;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.btn-group path {
+  fill: none;
+  stroke: #ffffff;
+  stroke-dasharray: 334.9, 99999;
+  transition: stroke-dashoffset 1s cubic-bezier(0, 0.8, 0.2, 1);
+  stroke-width: 1;
+}
+body {
+  margin: 0;
+  padding: 0;
+}
+.container {
+  font-family: sans-serif;
+  font-weight: 300;
+  color: #ffffff;
+  text-align: center;
+  position:relative;
+  width: 100%;
+  top: 30px;
+  transform: translateY(-50%);
+}
+@media (max-width: 30em) {
+  body {
+    zoom: 0.75;
+  }
+}
+@media (max-width: 25em) {
+  body {
+    zoom: 0.5;
+  }
+}
+</style>
+<body>
+	<div class="header">
+		<h1 id="homeBtn">PUZZLE</h1>
+	</div>
+	<div>
+		<ul>
+			<li class="right before"><a id="loginBtn">로그인</a></li>
+			<li class="right before"><a id="joinBtn">회원가입</a></li>
+			<li class="right after"><a id="logoutBtn">로그아웃</a></li>
+			<li class="right after"><a id="startBtn">GAME</a></li>
+			<li class="right after"><a id="loginState"></a></li>
+			
+		</ul>
+	</div>
+	<div class="row">
+		<div class="column side"></div>
+		<div class="column middle" style="background-color: #aaa;">
+			<div class="container">
+				<div class="btn-group">
+					<div class="btn rankBtn" id="todayBtn">today</div>
+					<div class="btn rankBtn" id="tomonthBtn">tomonth</div>
+					<div class="btn active rankBtn" id="topBtn">top</div>
+					<div class="btn rankBtn after" id="myRankBtn">myRank</div>
+				</div>
+			</div>
+			<div class="center">
+				<table id="today" class="list"></table>
+				<table id="top" class="list"></table>
+				<table id="tomonth" class="list"></table>
+				<table id="myRank" class="list"></table>
+			</div>
+		</div>
+		<div class="column side"></div>
+	</div>
+
+	<div class="footer">
+		<p>Footer</p>
+	</div>
+</body>
+<script>
+	$(".after").hide();
+	$("#loginState").hide();
+	$(document).ready(function () {
+		const pathLength = 68 * 2 + 200;
+
+		class BtnGroup {
+		  constructor(group) {
+		    this.group = group;
+		    this.buttons = Array.prototype.slice.call(
+		    this.group.querySelectorAll('.btn'));
+
+		    this.svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+		    this.svg.setAttribute('viewbox',
+		    `-1 -1 ${160 * this.buttons.length + 2} 42`);
+
+		    this.path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+		    this.currentPath = 'M -80, 40';
+		    this.currentIndex = -1;
+		    this.activateIndex(
+		    this.buttons.indexOf(
+		    this.group.querySelector('.active')));
+
+
+		    this.group.appendChild(this.svg);
+		    this.svg.appendChild(this.path);
+		    this.refreshPath();
+		    for (const button of this.buttons) {
+		      button.addEventListener('click',
+		      e => this.onClick(e));
+
+		    }
+		  }
+
+		  onClick(e) {
+		    const index = this.buttons.indexOf(e.srcElement || e.target);
+		    this.activateIndex(index);
+		  }
+
+		  refreshPath() {
+		    this.path.setAttributeNS(null, 'd', this.currentPath);
+		    this.path.style.strokeDashoffset = (-this.path.getTotalLength() + pathLength) * 0.9965;
+		  }
+
+		  center(index) {
+		    return index * 160 + 80;
+		  }
+
+		  removeClass(str) {
+		    if (this.buttons[this.currentIndex]) {
+		      this.buttons[this.currentIndex].classList.remove(str);
+		    }
+		  }
+
+		  addClass(str) {
+		    if (this.buttons[this.currentIndex]) {
+		      this.buttons[this.currentIndex].classList.add(str);
+		    }
+		  }
+
+		  activateIndex(index) {
+		    const lastCenter = this.center(this.currentIndex);
+		    const nextCenter = this.center(index);
+		    const offset = index < this.currentIndex ? -50 : 50;
+		    const curve = index < this.currentIndex ? -30 : 30;
+		    this.currentPath += `
+		      L ${lastCenter + offset}, 40
+		      C ${lastCenter + offset + curve}, 40
+		        ${lastCenter + offset + curve},  0
+		        ${lastCenter + offset},  0
+		      L ${lastCenter - offset},  0
+		      C ${lastCenter - offset - curve},  0
+		        ${lastCenter - offset - curve}, 40
+		        ${lastCenter - offset}, 40
+		      L ${nextCenter + offset}, 40
+		      C ${nextCenter + offset + curve}, 40
+		        ${nextCenter + offset + curve},  0
+		        ${nextCenter + offset},  0
+		      L ${nextCenter - offset},  0
+		      C ${nextCenter - offset - curve},  0
+		        ${nextCenter - offset - curve}, 40
+		        ${nextCenter - offset}, 40
+		      L ${nextCenter}, 40
+		    `;
+		    this.removeClass('active');
+		    this.currentIndex = index;
+		    this.addClass('active');
+		    this.refreshPath();
+		  }}
+		;
+
+		const groups = Array.prototype.slice.call(document.querySelectorAll('.btn-group'));
+		for (const group of groups) {
+			  new BtnGroup(group);
+			}
+		$(".rankBtn").show();
+		$(".list").hide();
+		
+		
+	
+		
+		//sessionInfo값을 동기요청
+		let loginState = null;
+		$.ajax({
+			url : "/puzzle/GetSessionInfo",
+			method : "POST",
+			async : false, //false 동기, true 비동기
+			success : function(json) {
+				if(json != null){
+					loginState = json;
+					let mail = json;
+			        
+			        // 먼저 @ 의 인덱스를 찾는다 - 인덱스 값: 5
+			        let idx = mail.indexOf("@"); 
+			        
+			        // @ 앞부분을 추출
+			        // substring은 첫번째 지정한 인덱스는 포함하지 않는다.
+			        // 아래의 경우는 첫번째 문자열인 a 부터 추출된다.
+			        let mail1 = mail.substring(0, idx);
+			        
+			        // 뒷부분을 추출
+			        // 아래 substring은 @ 바로 뒷부분인 n부터 추출된다.
+			        let mail2 = mail.substring(idx+1);
+			      
+			        console.log("mail1 : "+mail1);
+			        console.log("mail2 : "+mail2);	
+				}
+			}
+		});
+		
+		let ranking = function(point, rank, count, timer, id){
+			//console.log(point)
+			if (rank == 1){
+				$(point).append("<tr><td><img src='/puzzle/images/gold.png' height='60' width='50'></td><td>" + count + "회 </td><td>" + timer + "초 </td><td>" + id + "</td></tr>");
+			}
+			else if (rank == 2){
+				$(point).append("<tr><td><img src='/puzzle/images/silver.png' height='40' width='35'></td><td>" + count + "회 </td><td>" + timer + "초 </td><td>" + id + "</td></tr>");
+			}
+			else if (rank == 3){
+				$(point).append("<tr><td><img src='/puzzle/images/bronze.png' height='25' width='25'></td><td>" + count + "회 </td><td>" + timer + "초 </td><td>" + id + "</td></tr>");
+			}
+			else {
+				$(point).append("<tr><td>"+rank+"등</td><td>" + count + "회 </td><td>" + timer + "초 </td><td>" + id + "</td></tr>");
+			}
+			//console.log("my",rank)
+		}
+		
+		$.ajax({
+			url : "/puzzle/GetRank",
+			method : "POST",
+			data : {"memberId" : loginState},
+			success : function(json) {
+				//console.log(json);
+				let rank = 0;
+				
+				$.each(json, function(i) {
+					if(json[i] == null) {
+						return;
+					}
+					if(i<10) {
+						rank = i%10+1;
+						ranking("#today",rank,json[i].count,json[i].timer,json[i].member.memberId)
+					}
+					if(i>=10 && i<20) {
+						rank = i%10+1;
+						ranking("#tomonth",rank,json[i].count,json[i].timer,json[i].member.memberId)
+					}
+					if(i>=20 && i<30) {
+						rank = i%10+1;
+						ranking("#top",rank,json[i].count,json[i].timer,json[i].member.memberId)
+					}
+					if(i>=30 && i<40) {
+						rank = i%10+1;
+						ranking("#myRank",rank,json[i].count,json[i].timer,json[i].member.memberId)
+					}
+				});
+			}
+		});
+		
+		$("#todayBtn").click(function(){
+			$(".list").hide();
+			$("#today").show();
+		});
+		$("#topBtn").click(function(){
+			$(".list").hide();
+			$("#top").show();
+		});
+		$("#tomonthBtn").click(function(){
+			$(".list").hide();
+			$("#tomonth").show();
+		});
+		$("#myRankBtn").click(function(){
+			$(".list").hide();
+			$("#myRank").show();
+		});
+		
+		if (loginState != null) {
+			//상단 로그인 id표시
+			$("#loginState").text(loginState+"님 접속중");
+			//console.log("접속",$("#loginState").text())
+			$("#loginState").show();
+			$(".after").show();
+			$(".before").hide();
+		}
+		else {
+			$(".before").show();
+			$(".after").hide();
+		}
+		$("#loginBtn").click(function(){
+			location.href = "/puzzle/login.html";
+		});
+		$("#joinBtn").click(function(){
+			location.href = "/puzzle/join.html";
+		});
+		$("#startBtn").click(function(){
+			location.href = "/puzzle/puzzle.html";
+		});
+		$("#loginState").click(function(){
+			location.href = "/puzzle/update.html";
+		});
+		$("#homeBtn").click(function(){
+			location.href = "/puzzle/index.html";
+		});
+		$("#logoutBtn").click(function(){
+			$.ajax({
+				url : "/puzzle/Logout",
+				method : "POST",
+				success : function(){
+					location.href = "/puzzle/index.html";
+				}
+			});
+		});
+	});
+</script>
+</html>

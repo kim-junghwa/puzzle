@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>update</title>
+<script src="/puzzle/scripts/jquery-3.4.1.min.js"></script>
+</head>
+<body>
+	<h1 id="homeBtn">home</h1>
+	<h2>회원 정보 수정</h2>
+	<table>
+		<tr>
+			<td>member_id</td>
+			<td><input type="text" id="memberId" readonly="readonly"></td>
+		</tr>
+		<tr>
+			<td>member_pw</td>
+			<td><input type="password" id="memberPw"></td>
+		</tr>
+		<tr>
+			<td>new_member_pw</td>
+			<td><input type="password" id="newMemberPw"></td>
+		</tr>
+	</table>
+	<button type="button" id="updateBtn">수정</button>
+	<button type="button" id="deleteBtn">탈퇴</button>
+</body>
+<script>
+	let loginState = null;
+	$.ajax({
+		url : "/puzzle/GetSessionInfo",
+		method : "POST",
+		async : false, //false 동기, true 비동기
+		success : function(json) {
+			loginState = json;
+		}
+	});
+	$("#memberId").val(loginState);
+	
+	$("#updateBtn").click(function(){
+		$.ajax({
+			url : "/puzzle/Update",
+			method : "POST",
+			data : {"memberId":$("#memberId").val(),"memberPw":$("#memberPw").val(),"newMemberPw":$("#newMemberPw").val()},
+			success : function(json){
+				if(json == 1) {
+					alert("수정되었습니다.");
+					location.href = "/puzzle/index.html";
+					return;
+				}
+				else {
+					alert("비밀번호를 잘못 입력함");
+					location.href = "/puzzle/update.html";
+				}
+			}
+		});
+	});
+	$("#deleteBtn").click(function(){
+		$.ajax({
+			url : "/puzzle/Delete",
+			method : "POST",
+			data : {"memberId":$("#memberId").val(),"memberPw":$("#memberPw").val()},
+			success : function(json){
+				if(json == 1) {
+					alert("탈퇴되었습니다.");
+					$.ajax({
+						url : "/puzzle/Logout",
+						method : "POST",
+						success : function(){
+							location.href = "/puzzle/index.html";
+						}
+					});
+					return;
+				}
+				else {
+					alert("비밀번호를 잘못 입력함");
+					location.href = "/puzzle/update.html";
+				}
+			}
+		});
+	});
+	$("#homeBtn").click(function(){
+		location.href = "/puzzle/index.html";
+	});
+</script>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>JOIN</title>
+<script src="/puzzle/scripts/jquery-3.4.1.min.js"></script>
+</head>
+<body>
+	<h1 id="homeBtn">home</h1>
+	<h2>회원가입</h2>
+	<table>
+		<tr>
+			<td>member_id</td>
+			<td><input type="text" id="memberId"></td>
+		</tr>
+		<tr>
+			<td>member_pw</td>
+			<td><input type="password" id="memberPw"></td>
+		</tr>
+	</table>
+	<button type="button" id="joinBtn">회원가입</button>
+</body>
+<script>
+	$("#joinBtn").click(function(){
+		if($("#memberId").val() == "" || $("#memberPw").val() == "") {
+			alert("빈칸 있음");
+			location.href = "/puzzle/join.html";
+			return;
+		}
+		//console.log("join");
+		$.ajax({
+			url : "/puzzle/Join",
+			method : "POST",
+			data : {"memberId" : $("#memberId").val(), "memberPw" : $("#memberPw").val()},
+			success : function(){
+				alert("로그인 해주세요");
+				location.href = "/puzzle/login.html";
+			}
+		});
+	});
+	$("#homeBtn").click(function(){
+		location.href = "/puzzle/index.html";
+	});
+</script>
+</html>
