@@ -1,6 +1,7 @@
 package service;
 
 import java.sql.*;
+import java.util.Random;
 import dao.*;
 import vo.*;
 
@@ -16,6 +17,7 @@ public class MemberService {
 			conn.setAutoCommit(false);
 			
 			// befor
+			
 			returnMember = memberDao.login(member, conn);
 			//System.out.println(returnMember);
 			// after
@@ -49,6 +51,17 @@ public class MemberService {
 			DBService dbService = new DBService();
 			conn = dbService.getConnection();
 			conn.setAutoCommit(false);
+			Random rnd = new Random();
+			String randomStr = "";
+			for(int i=0; i<5; i++) {
+				randomStr += String.valueOf((char) ((int) (rnd.nextInt(26)) + 97));
+			}
+			for(int i=0; i<2; i++) {
+				randomStr += String.valueOf(rnd.nextInt(10));
+			}
+			
+			System.out.println("join random String : "+randomStr);
+			member.setRand(randomStr);
 			
 			memberDao.insertMember(member, conn);
 			

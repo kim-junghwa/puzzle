@@ -12,6 +12,8 @@
 
 body {
 	font-family: Arial, Helvetica, sans-serif;
+	margin: 0;
+  	padding: 0;
 }
 
 /* Style the header */
@@ -131,10 +133,6 @@ li a:hover {
   transition: stroke-dashoffset 1s cubic-bezier(0, 0.8, 0.2, 1);
   stroke-width: 1;
 }
-body {
-  margin: 0;
-  padding: 0;
-}
 .container {
   font-family: sans-serif;
   font-weight: 300;
@@ -181,6 +179,7 @@ body {
 					<div class="btn rankBtn after" id="myRankBtn">myRank</div>
 				</div>
 			</div>
+			
 			<div class="center">
 				<table id="today" class="list"></table>
 				<table id="top" class="list"></table>
@@ -298,18 +297,18 @@ body {
 		
 		//sessionInfo값을 동기요청
 		let loginState = null;
+		let fullname = null;
 		$.ajax({
 			url : "/puzzle/GetSessionInfo",
 			method : "POST",
 			async : false, //false 동기, true 비동기
 			success : function(json) {
 				if(json != null){
-					loginState = json;
 					let mail = json;
-			        
-			        // 먼저 @ 의 인덱스를 찾는다 - 인덱스 값: 5
+					fullname = json;
+			        // 먼저 @ 의 인덱스를 찾는다 
 			        let idx = mail.indexOf("@"); 
-			        
+			        console.log("idx:",idx);
 			        // @ 앞부분을 추출
 			        // substring은 첫번째 지정한 인덱스는 포함하지 않는다.
 			        // 아래의 경우는 첫번째 문자열인 a 부터 추출된다.
@@ -319,8 +318,12 @@ body {
 			        // 아래 substring은 @ 바로 뒷부분인 n부터 추출된다.
 			        let mail2 = mail.substring(idx+1);
 			      
-			        console.log("mail1 : "+mail1);
-			        console.log("mail2 : "+mail2);	
+			        //console.log("mail1 : "+mail1);
+			        if(idx == 0){
+			        	loginState = mail2;
+			        } else{
+			        	loginState = mail1;
+			        }
 				}
 			}
 		});
@@ -345,7 +348,7 @@ body {
 		$.ajax({
 			url : "/puzzle/GetRank",
 			method : "POST",
-			data : {"memberId" : loginState},
+			data : {"memberId" : fullname},
 			success : function(json) {
 				//console.log(json);
 				let rank = 0;

@@ -2,44 +2,228 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>JOIN</title>
+<title>login</title>
 <script src="/puzzle/scripts/jquery-3.4.1.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
+<style>
+* {
+	box-sizing: border-box;
+}
+
+body {
+	font-family: Arial, Helvetica, sans-serif;
+	margin: 0;
+  	padding: 0;
+}
+
+/* Style the header */
+.header {
+	background-color: #f1f1f1;
+	padding: 30px;
+	text-align: center;
+	font-size: 35px;
+}
+
+/* Create three unequal columns that floats next to each other */
+.column {
+	float: left;
+	padding: 10px;
+	height: 500px; /* Should be removed. Only for demonstration */
+}
+
+/* Left and right column */
+.column.side {
+	background-color: #f1f1f1;
+	width: 20%;
+}
+
+/* Middle column */
+.column.middle {
+	width: 60%;
+}
+
+/* Clear floats after the columns */
+.row:after {
+	content: "";
+	display: table;
+	clear: both;
+}
+
+/* Style the footer */
+.footer {
+	background-color: #333;
+	padding: 10px;
+	text-align: center;
+}
+
+/* Responsive layout - makes the three columns stack on top of each other instead of next to each other */
+@media ( max-width : 600px) {
+	.column.side, .column.middle {
+		width: 100%;
+	}
+}
+
+ul {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	background-color: #333;
+}
+
+.left {
+	float: left;
+}
+
+.right {
+	float: right;
+}
+
+.center{
+	position:relative;
+	text-align: center;
+	top:30px;
+}
+
+table{
+	margin: auto;
+}
+
+li a {
+	display: block;
+	color: white;
+	text-align: center;
+	padding: 14px 16px;
+	text-decoration: none;
+}
+
+li a:hover {
+	background-color: #111;
+}
+
+.loginForm{
+	top:50px;
+	margin:auto;
+	width: 300px;
+	height: 300px;
+	border:1px solid black;
+	border-radius:10px;
+	position: relative;
+	text-align: center;
+	padding: 5px;
+}
+
+.button{
+	 background-color: gray; /* Green */
+	 border: none;
+	 color: white;
+	 padding: 5px;
+	 text-align: center;
+	 text-decoration: none;
+	 display: inline-block;
+	 font-size: 16px;
+	 margin: 4px 2px;
+	 cursor: pointer;
+	 border-radius: 8px;
+}
+
+.input {
+	position:relative;
+	top:20px;
+}
+.input-container {
+  display: -ms-flexbox; /* IE10 */
+  display: flex;
+  width: 100%;
+  margin-bottom: 15px;
+}
+
+.icon {
+  padding: 10px;
+  background: black;
+  color: white;
+  min-width: 50px;
+  text-align: center;
+}
+
+.input-field {
+  width: 100%;
+  padding: 10px;
+  outline: none;
+}
+
+.input-field:focus {
+  border: 2px solid dodgerblue;
+}
+</style>
 <body>
-	<h1 id="homeBtn">home</h1>
-	<h2>회원가입</h2>
-	<table>
-		<tr>
-			<td>member_id</td>
-			<td><input type="text" id="memberId"></td>
-		</tr>
-		<tr>
-			<td>member_pw</td>
-			<td><input type="password" id="memberPw"></td>
-		</tr>
-	</table>
-	<button type="button" id="joinBtn">회원가입</button>
+	<div class="header">
+		<h1 id="homeBtn">PUZZLE</h1>
+	</div>
+	<div>
+		<ul>
+			<li class="right before"><a id="loginForm">로그인</a></li>
+			<li class="right before"><a class="joinForm">회원가입</a></li>
+			
+		</ul>
+	</div>
+	<div class="row">
+		<div class="column side"></div>
+		<div class="column middle" style="background-color: #aaa;">
+			<div class="loginForm">
+				<h3>JOIN</h3>
+				<h5 class="form-signin-heading">회원가입 정보를 입력하세요</h5>
+				<div class="input-container">
+					<i class="fa fa-user icon"></i>
+					<input class="input-field" type="text" placeholder="Email" id="memberId" autofocus="autofocus">
+				</div>
+ 
+				<div class="input-container">
+					<i class="fa fa-key icon"></i> 
+					<input class="input-field" type="password" placeholder="Password" id="memberPw">
+				</div>
+				<button type="button" class="button" id="joinBtn" >회원가입</button>
+			</div>
+		</div>
+		<div class="column side"></div>
+	</div>
+
+	<div class="footer">
+		<p>Footer</p>
+	</div>
 </body>
 <script>
-	$("#joinBtn").click(function(){
-		if($("#memberId").val() == "" || $("#memberPw").val() == "") {
-			alert("빈칸 있음");
-			location.href = "/puzzle/join.html";
-			return;
-		}
-		//console.log("join");
-		$.ajax({
-			url : "/puzzle/Join",
-			method : "POST",
-			data : {"memberId" : $("#memberId").val(), "memberPw" : $("#memberPw").val()},
-			success : function(){
-				alert("로그인 해주세요");
-				location.href = "/puzzle/login.html";
-			}
+	$(document).ready(function () {
+		$("#loginForm").click(function(){
+			location.href = "/puzzle/login.html";
 		});
-	});
-	$("#homeBtn").click(function(){
-		location.href = "/puzzle/index.html";
+		
+		$(".joinForm").click(function(){
+			location.href = "/puzzle/join.html";
+		});
+		
+		$("#homeBtn").click(function(){
+			location.href = "/puzzle/index.html";
+		});
+		
+		$("#joinBtn").click(function(){
+			if($("#memberId").val() == "" || $("#memberPw").val() == "") {
+				alert("빈칸 있음");
+				return;
+			}
+			//console.log("join");
+			$.ajax({
+				url : "/puzzle/Join",
+				method : "POST",
+				data : {"memberId" : $("#memberId").val(), "memberPw" : $("#memberPw").val()},
+				success : function(){
+					alert("로그인 해주세요");
+					location.href = "/puzzle/login.html";
+				}
+			});
+		});
+		
 	});
 </script>
 </html>
