@@ -38,8 +38,8 @@ public class MemberDao {
 	 * INSERT INTO member(member_id, member_pw, member_level) values(?,?,'Y')
 	 */
 	public void insertMember(Member member, Connection conn) throws Exception {
-		System.out.println(member.getMemberId());
-		System.out.println(member.getMemberPw());
+		//System.out.println(member.getMemberId());
+		//System.out.println(member.getMemberPw());
 		//System.out.println(conn);
 		PreparedStatement stmt = null;
 		String sql = "INSERT INTO member(member_id, member_pw, rand, member_level) values(?,?,?,'Y')";

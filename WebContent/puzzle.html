@@ -5,10 +5,26 @@
 <title>image puzzle</title>
 <script src="/puzzle/scripts/jquery-3.4.1.min.js"></script>
 <style>
-
+#count{
+	border-radius:5px;
+}
+#timer{
+	border-radius:5px;
+}
+#f5{
+	background-color:#ff0000;
+	border-radius:42px;
+	display:inline-block;
+	cursor:pointer;
+	color:#ffffff;
+	font-family:Arial;
+	font-size:17px;
+	padding:4px 12px;
+	text-shadow:2px 2px 4px #662828;
+}
 .card {
-	width: 100px;
-	height: 100px;
+	width: 130px;
+	height: 181px;
 	position: relative;
 	transform-style: preserve-3d;
 	transition: 0.5s;
@@ -24,10 +40,12 @@
 	line-height: 50px;
 	text-align: center;
 	backface-visibility: hidden;
+	border-radius: 8px;
 }
 
 .front {
 	transform: rotateY(180deg);
+	background-color: white;
 }
 
 .back {
@@ -40,19 +58,133 @@
 	transform: rotateY(180deg);
 	animation: cardRotate 0.1s
 }
+* {
+	box-sizing: border-box;
+}
+
+body {
+	font-family: Arial, Helvetica, sans-serif;
+	margin: 0;
+  	padding: 0;
+}
+
+/* Style the header */
+.header {
+	background-color: #f1f1f1;
+	padding: 30px;
+	text-align: center;
+	font-size: 35px;
+}
+
+/* Create three unequal columns that floats next to each other */
+.column {
+	float: left;
+	padding: 10px;
+	height: 900px; /* Should be removed. Only for demonstration */
+}
+
+/* Left and right column */
+.column.side {
+	background-color: #f1f1f1;
+	width: 20%;
+}
+
+/* Middle column */
+.column.middle {
+	width: 60%;
+}
+
+/* Clear floats after the columns */
+.row:after {
+	content: "";
+	display: table;
+	clear: both;
+}
+
+/* Style the footer */
+.footer {
+	background-color: #333;
+	padding: 10px;
+	text-align: center;
+}
+
+/* Responsive layout - makes the three columns stack on top of each other instead of next to each other */
+@media ( max-width : 600px) {
+	.column.side, .column.middle {
+		width: 100%;
+	}
+}
+
+ul {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	background-color: #333;
+}
+
+.left {
+	float: left;
+}
+
+.right {
+	float: right;
+}
+
+.center{
+	position:relative;
+	text-align: center;
+	top:30px;
+}
+
+table{
+	margin: auto;
+}
+
+li a {
+	display: block;
+	color: white;
+	text-align: center;
+	padding: 14px 16px;
+	text-decoration: none;
+}
+
+li a:hover {
+	background-color: #111;
+}
 
 </style>
 </head>
-<body ondragstart='return false'>
-	<h1 id="homeBtn">home</h1>
-	<h2>puzzle</h2>
-	<h2><span id="loginState"></span></h2>
-	<table id=board>
-		
-	</table>
-	횟수 : <input type="text" id=count readonly="readonly">
-	타이머 : <input type="text" id=timer readonly="readonly">
-	<button type="button" id=f5>다시</button>
+<body>
+	<div class="header">
+		<h1 id="homeBtn">PUZZLE</h1>
+	</div>
+	<div>
+		<ul>
+			<li class="right after"><a id="logoutBtn">로그아웃</a></li>
+			<li class="right after"><a id="startBtn">GAME</a></li>
+			<li class="right after"><a id="loginState"></a></li>
+			
+		</ul>
+	</div>
+	<div class="row">
+		<div class="column side"></div>
+		<div class="column middle" style="background-color: #aaa;">
+			<div class="center">
+				횟수 : <input type="text" id=count readonly="readonly">
+				타이머 : <input type="text" id=timer readonly="readonly">
+				<br><br>
+				<table id=board></table>
+				<br>
+				<button type="button" id=f5>다시</button>
+			</div>
+		</div>
+		<div class="column side"></div>
+	</div>
+
+	<div class="footer">
+		<p>Footer</p>
+	</div>
 </body>
 <script>
 	let model3 = ["pic (1).png","pic (1).png",
@@ -104,6 +236,26 @@
 		
 	$(document).ready(function () {
 		
+		
+		$("#startBtn").click(function(){
+			location.href = "/puzzle/puzzle.html";
+		});
+		$("#loginState").click(function(){
+			location.href = "/puzzle/update.html";
+		});
+		$("#homeBtn").click(function(){
+			location.href = "/puzzle/index.html";
+		});
+		$("#logoutBtn").click(function(){
+			$.ajax({
+				url : "/puzzle/Logout",
+				method : "POST",
+				success : function(){
+					location.href = "/puzzle/index.html";
+				}
+			});
+		});
+		
 		let stage = 1;
 		let model = model1;
 		let loginState = null;
@@ -117,6 +269,7 @@
 			async : false, //false 동기, true 비동기
 			success : function(json) {
 				loginState = json;
+				//loginState = "test";
 			}
 		});
 		
@@ -163,7 +316,7 @@
 			$(".face").attr('disabled', true);
 			
 		});
-		
+
 		setTimeout(function(){
 			$(".card").toggleClass('active');
 			$(".face").attr('disabled', false);
@@ -334,7 +487,7 @@
 						setTimeout(function(){
 							$("#board").empty();
 							$(model).each(function(index, item){
-								if (index%size == 0) {
+								if (index%(size+3) == 0) {
 									$("#board").append("<tr>");
 								}
 								let game = "<td class='card'>";

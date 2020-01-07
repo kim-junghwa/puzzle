@@ -5,25 +5,177 @@
 <title>update</title>
 <script src="/puzzle/scripts/jquery-3.4.1.min.js"></script>
 </head>
+<style>
+#updateBtn{
+	box-shadow:inset 0px 0px 0px -50px #caefab;
+	background:linear-gradient(to bottom, #77d42a 5%, #5cb811 100%);
+	background-color:#77d42a;
+	border-radius:31px;
+	border:1px solid #268a16;
+	display:inline-block;
+	cursor:pointer;
+	color:#306108;
+	font-family:Arial;
+	font-size:17px;
+	font-weight:bold;
+	padding:4px 24px;
+	text-decoration:none;
+	text-shadow:0px 1px 0px #aade7c;
+}
+#deleteBtn{
+	box-shadow:inset 0px 0px 0px -50px #cf866c;
+	background:linear-gradient(to bottom, #d0451b 5%, #bc3315 100%);
+	background-color:#d0451b;
+	border-radius:31px;
+	border:1px solid #942911;
+	display:inline-block;
+	cursor:pointer;
+	color:#ffffff;
+	font-family:Arial;
+	font-size:17px;
+	font-weight:bold;
+	padding:4px 24px;
+	text-decoration:none;
+	text-shadow:0px 1px 0px #854629;
+}
+* {
+	box-sizing: border-box;
+}
+
+body {
+	font-family: Arial, Helvetica, sans-serif;
+	margin: 0;
+  	padding: 0;
+}
+
+/* Style the header */
+.header {
+	background-color: #f1f1f1;
+	padding: 30px;
+	text-align: center;
+	font-size: 35px;
+}
+
+/* Create three unequal columns that floats next to each other */
+.column {
+	float: left;
+	padding: 10px;
+	height: 800px; /* Should be removed. Only for demonstration */
+}
+
+/* Left and right column */
+.column.side {
+	background-color: #f1f1f1;
+	width: 20%;
+}
+
+/* Middle column */
+.column.middle {
+	width: 60%;
+}
+
+/* Clear floats after the columns */
+.row:after {
+	content: "";
+	display: table;
+	clear: both;
+}
+
+/* Style the footer */
+.footer {
+	background-color: #333;
+	padding: 10px;
+	text-align: center;
+}
+
+/* Responsive layout - makes the three columns stack on top of each other instead of next to each other */
+@media ( max-width : 600px) {
+	.column.side, .column.middle {
+		width: 100%;
+	}
+}
+
+ul {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	background-color: #333;
+}
+
+.left {
+	float: left;
+}
+
+.right {
+	float: right;
+}
+
+.center{
+	position:relative;
+	text-align: center;
+	top:30px;
+}
+.center input{
+	border-radius: 5px;
+}
+
+table{
+	margin: auto;
+}
+
+li a {
+	display: block;
+	color: white;
+	text-align: center;
+	padding: 14px 16px;
+	text-decoration: none;
+}
+
+li a:hover {
+	background-color: #111;
+}
+</style>
 <body>
-	<h1 id="homeBtn">home</h1>
-	<h2>회원 정보 수정</h2>
-	<table>
-		<tr>
-			<td>member_id</td>
-			<td><input type="text" id="memberId" readonly="readonly"></td>
-		</tr>
-		<tr>
-			<td>member_pw</td>
-			<td><input type="password" id="memberPw"></td>
-		</tr>
-		<tr>
-			<td>new_member_pw</td>
-			<td><input type="password" id="newMemberPw"></td>
-		</tr>
-	</table>
-	<button type="button" id="updateBtn">수정</button>
-	<button type="button" id="deleteBtn">탈퇴</button>
+	<div class="header">
+		<h1 id="homeBtn">PUZZLE</h1>
+	</div>
+	<div>
+		<ul>
+			<li class="right after"><a id="logoutBtn">로그아웃</a></li>
+			<li class="right after"><a id="startBtn">GAME</a></li>
+			<li class="right after"><a id="loginState"></a></li>
+			
+		</ul>
+	</div>
+	<div class="row">
+		<div class="column side"></div>
+		<div class="column middle" style="background-color: #aaa;">
+			<div class="center">
+				<table>
+					<tr>
+						<td>member_id</td>
+						<td><input type="text" id="memberId" readonly="readonly"></td>
+					</tr>
+					<tr>
+						<td>member_pw</td>
+						<td><input type="password" id="memberPw"></td>
+					</tr>
+					<tr>
+						<td>new_member_pw</td>
+						<td><input type="password" id="newMemberPw"></td>
+					</tr>
+				</table>
+				<button type="button" id="updateBtn">수정</button>
+				<button type="button" id="deleteBtn">탈퇴</button>
+			</div>
+		</div>
+		<div class="column side"></div>
+	</div>
+
+	<div class="footer">
+		<p>Footer</p>
+	</div>
 </body>
 <script>
 	let loginState = null;
@@ -82,5 +234,25 @@
 	$("#homeBtn").click(function(){
 		location.href = "/puzzle/index.html";
 	});
+	$(document).ready(function(){
+		$("#startBtn").click(function(){
+			location.href = "/puzzle/puzzle.html";
+		});
+		$("#loginState").click(function(){
+			location.href = "/puzzle/update.html";
+		});
+		$("#homeBtn").click(function(){
+			location.href = "/puzzle/index.html";
+		});
+		$("#logoutBtn").click(function(){
+			$.ajax({
+				url : "/puzzle/Logout",
+				method : "POST",
+				success : function(){
+					location.href = "/puzzle/index.html";
+				}
+			});
+		});
+	})
 </script>
 </html>

@@ -209,16 +209,16 @@ li a:hover {
 		});
 		
 		$("#loginBtn").click(function(){
-			//console.log("로그인 버튼 클릭")
+			console.log("로그인 버튼 클릭")
 			$.ajax({
 				url : "/puzzle/Login",
 				method : "POST",
 				data : {"memberId" : $("#memberId").val(), "memberPw" : $("#memberPw").val()},
 				success : function(json){
-					//console.log("success")
+					console.log("success")
 					if(json == null) {
 						alert("다시 로그인");
-						location.href = "/puzzle/login.html";
+						location.href = "/puzzle/login.html";w
 					}
 					else {
 						location.href = "/puzzle/index.html";
